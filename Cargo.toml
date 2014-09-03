@@ -1,0 +1,11 @@
+[package]
+
+name = "kuramoto-simulations"
+version = "0.0.1"
+authors = ["Manish Goregaokar"]
+
+[[bin]]
+name = "Kuramoto-Sumulations"
+path = "src/main.rs"
+
+
