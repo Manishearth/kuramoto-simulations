@@ -66,3 +66,40 @@ pub fn run(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscilla
 //println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
 (arr0, arr)
 }
+
+pub fn run_star(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscillator>) {
+    let dt = 0.001;
+    let mut arr = vec!();
+    let mut sum = 0f64;
+    let mainosc = Oscillator::new();
+    let mut i = n;
+    let K = K / n as f64;
+    while i > 0 {
+        let osc = Oscillator::new();
+        sum = sum + osc.phase;
+        sum -= 360f64*((sum/360.0) as uint as f64);
+        arr.push(osc);
+        i -= 1;
+    }
+    for i in arr.mut_iter() {
+        i.phase -= sum;
+    }
+    let arr0 = arr.clone();
+    let mut ctr = t;
+    while ctr > 0 {
+        let mut  sum = 0.0;
+        for i in arr.mut_iter() {
+            let dev =  K*(((i.phase - mainosc.phase)*3.1415/180.0).sin());
+            sum += dev;
+            i.phase += dt*(-dev + (i.omegadev + omega));
+            i.phase -= 360f64*((i.phase/360.0) as uint as f64);
+        }   
+        sum += mainosc.omegadev*omega + omega;
+        sum *= dt;
+        sum += mainosc.phase;
+        sum -= 360f64*((sum/360.0) as uint as f64);
+        ctr -= 1;
+    }
+//println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
+(arr0, arr)
+}

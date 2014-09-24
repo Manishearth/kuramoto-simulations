@@ -22,15 +22,16 @@ fn main() {
 	println!("{}", fin)
 return;*/
 		let mut i = 1f64;
-		while i <= 250f64 {
+		let tries = 100;
+		while i <= 100f64 {
 			let multi = true;
 			let n = 30;
-			let mut ctr = if multi {0u} else {4};
+			let mut ctr = if multi {0u} else {tries - 1};
 			let mut sum0 = 0.0f64	;
 			let mut min = 2f64;
 			let mut max = 0.0f64;
-			while ctr < 5 {
-				let (a0, fin) = sim::run(n,1.0, 5000, i);
+			while ctr < tries {
+				let (a0, fin) = sim::run(n,1.0, 50000, i);
 				let mut sum = 0.0;
 				for  el in fin.iter() {
 					sum+=el.phase;
@@ -52,8 +53,8 @@ return;*/
 				}
 				ctr += 1;	
 			}
-			if multi {println!("{} {} {} {}", i, sum0/5.0, min, max);}
-			i += 10f64;
+			if multi {println!("{} {} {} {}", i, sum0/tries as f64, min, max);}
+			i += 5f64;
 
 		}
 
