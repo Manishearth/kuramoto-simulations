@@ -1,60 +1,108 @@
-
-#![feature(globs)] 
-extern crate serialize;
-extern crate num;
-
+use std::rand;
 use std::num::FloatMath;
+use serialize::json::Encoder;
 
-use std::from_str::FromStr;
-mod sim;
-
-fn unwrap_arg<T: FromStr>(index: uint, def:T) -> T {
-	let arg: Option<T>  = FromStr::from_str(std::os::args()[index].as_slice());
-	arg.unwrap_or(def)
+#[deriving(Encodable, Decodable, Clone, Show)]
+struct Oscillator {
+    pub phase: f64,
+    pub omegadev: f64,
 }
-fn main() {
-	let args = std::os::args();
-	
-	/*let (a0, fin) = sim::run(unwrap_arg(1,10),unwrap_arg(2,1.0),unwrap_arg(3,10), unwrap_arg(4,6f64));
-	println!("{}", fin)
-	return;
-	let (a0, fin) = sim::run(100,1.0,5000, 100.0);
-	println!("{}", fin)
-return;*/
-		let mut i = 1f64;
-		while i <= 600f64 {
-			let multi = true;
-			let n = 30;
-			let mut ctr = if multi {0u} else {4};
-			let mut sum0 = 0.0f64	;
-			let mut min = 2f64;
-			let mut max = 0.0f64;
-			while ctr < 5 {
-				let (a0, fin) = sim::run(n,1.0, 2000, i);
-				let mut sum = 0.0;
-				for  el in fin.iter() {
-					sum+=el.phase;
-				}
-				sum = sum / n as f64;
-				let (mut s, mut c) = (0f64, 0f64);
-				for el in fin.iter() {
-					s+=(el.phase * 3.14159/180.0).sin();
-					c+=(el.phase * 3.14159/180.0).cos();
-				}
 
-				if multi {
-					let f = (s*s + c*c).sqrt()/n as f64	;
-					sum0 +=f;
-					min = if f < min {f} else {min};
-					max = if f > max {f} else {max};
-				} else {
-				 println!("{} {}", i, (s*s + c*c).sqrt()/100.0 as f64	);					
-				}
-				ctr += 1;	
-			}
-			if multi {println!("{} {} {} {}", i, sum0/5.0, min, max);}
-			i += 50f64;
+impl Oscillator {
+    fn new() -> Oscillator {
+        Oscillator {
+            phase: rand::random::<f64>() * 360.0,
+            omegadev: 0.99*(rand::random::<f64>()-0.5),
+        }
+    }
+}
+#[deriving(Encodable, Decodable, Clone, Show)]
+struct Ret {
+    zero: Vec<Oscillator>,
+    all: Vec<Vec<f64>>
+}
 
-		}
+pub fn run(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscillator>) {
+    let dt = 0.001;
+    let mut arr = vec!();
+    let mut ser = vec!();
+    let mut sum = 0f64;
 
+    let mut i = n;
+    let K = K / n as f64;
+    while i > 0 {
+        let osc = Oscillator::new();
+        sum = sum + osc.phase;
+        sum -= 360f64*((sum/360.0) as uint as f64);
+        arr.push(osc);
+        i -= 1;
+    }
+    for i in arr.mut_iter() {
+        i.phase -= sum;
+    }
+    let arr0 = arr.clone();
+    let mut ctr = t;
+    while ctr > 0 {
+        let mut newarr = vec!();
+        let mut buf = vec!();
+        for i in arr.iter() {
+            let mut  sum = 0.0;
+            for j in arr.iter() {
+                sum += K*(((j.phase - i.phase)*3.1415/180.0).sin());
+            }
+            sum += i.omegadev*omega + omega;
+            sum *= dt;
+            sum += i.phase;
+            sum -= 360f64*((sum/360.0) as uint as f64);
+            let mut cl = i.clone();
+            cl.phase = sum;
+            buf.push(sum);
+            newarr.push(cl)
+        }
+        arr = newarr;
+        ser.push(buf);
+        ctr -= 1;
+    }
+//println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
+(arr0, arr)
+}
+
+pub fn run_star(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscillator>) {
+    let dt = 0.001;
+    let mut arr = vec!();
+    let mut ser = vec!();
+    let mut sum = 0f64;
+    let mainosc = Oscillator::new();
+    let mut i = n;
+    let K = K / n as f64;
+    while i > 0 {
+        let osc = Oscillator::new();
+        sum = sum + osc.phase;
+        sum -= 360f64*((sum/360.0) as uint as f64);
+        arr.push(osc);
+        i -= 1;
+    }
+    for i in arr.mut_iter() {
+        i.phase -= sum;
+    }
+    let arr0 = arr.clone();
+    let mut ctr = t;
+    while ctr > 0 {
+        let mut  sum = 0.0;
+        for i in arr.mut_iter() {
+            let dev =  K*(((i.phase - mainosc.phase)*3.1415/180.0).sin());
+            sum += dev;
+            i.phase += dt*(dev + (i.omegadev + omega));
+            i.phase -= 360f64*((i.phase/360.0) as uint as f64);
+        }   
+        sum += mainosc.omegadev*omega + omega;
+        sum *= dt;
+        sum += mainosc.phase;
+        sum -= 360f64*((sum/360.0) as uint as f64);
+        let mut cl = i.clone();
+        cl.phase = sum;
+        ctr -= 1;
+    }
+//println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
+(arr0, arr)
 }

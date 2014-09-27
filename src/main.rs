@@ -22,7 +22,7 @@ fn main() {
 	println!("{}", fin)
 return;*/
 		let mut i = 1f64;
-		let tries = 100;
+		let tries = 20;
 		while i <= 100f64 {
 			let multi = true;
 			let n = 30;
@@ -54,7 +54,7 @@ return;*/
 				ctr += 1;	
 			}
 			if multi {println!("{} {} {} {}", i, sum0/tries as f64, min, max);}
-			i += 5f64;
+			i += 10f64;
 
 		}
 
