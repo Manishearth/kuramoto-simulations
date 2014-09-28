@@ -1,0 +1,1 @@
+cargo run 100  1 5000 30 | grep -v "Fresh" | grep -v Comp| grep -v Run >../dump1.json 
