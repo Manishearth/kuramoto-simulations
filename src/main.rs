@@ -14,7 +14,9 @@ fn unwrap_arg<T: FromStr>(index: uint, def:T) -> T {
 }
 fn main() {
 	let args = std::os::args();
-	
+	sim::run(30, 1.0, unwrap_arg(1, 5000), unwrap_arg(2, 5.0), unwrap_arg(3, "data/10/10.rand.dat".to_string()));
+	//sim::createSet();
+	return;
 	/*let (a0, fin) = sim::run(unwrap_arg(1,10),unwrap_arg(2,1.0),unwrap_arg(3,10), unwrap_arg(4,6f64));
 	println!("{}", fin)
 	return;
@@ -31,7 +33,7 @@ return;*/
 			let mut min = 2f64;
 			let mut max = 0.0f64;
 			while ctr < tries {
-				let (a0, fin) = sim::run(n,1.0, 50000, i);
+				let (a0, fin) = sim::run(n,1.0, 50000, i, "b".to_string());
 				let mut sum = 0.0;
 				for  el in fin.iter() {
 					sum+=el.phase;
