@@ -1,0 +1,7 @@
+RK4
+dt = 0.01 (step size) (h)
+K = 0.5
+w = 0.1 (uniform)
+10% dw
+
+yn+1 = yn + dt*w + dt*(sum sin(delta phi))
