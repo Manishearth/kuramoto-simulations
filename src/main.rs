@@ -14,7 +14,21 @@ fn unwrap_arg<T: FromStr>(index: uint, def:T) -> T {
 }
 fn main() {
 	let args = std::os::args();
-	sim::run(30, 1.0, unwrap_arg(1, 5000), unwrap_arg(2, 5.0), unwrap_arg(3, "data/10/10.rand.dat".to_string()));
+	sim::run(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/10/10.rand.dat".to_string()));
+	return;
+	let mut k = 0.02;
+	while k < 0.2 {
+		let n = unwrap_arg(1, 50000);
+		let buf = sim::run(30, 1.0, n, k, unwrap_arg(2, "data/10/10.rand.dat".to_string()));
+		let v = buf.tailn(n-10000);
+		let mut sum = 0f64;
+		for e in v.iter() {
+			sum += *e;
+		}
+		sum /= 10000f64;
+		println!("{} {}", k, sum)
+		k+= 0.005;
+	}
 	//sim::createSet();
 	return;
 	/*let (a0, fin) = sim::run(unwrap_arg(1,10),unwrap_arg(2,1.0),unwrap_arg(3,10), unwrap_arg(4,6f64));
@@ -23,6 +37,7 @@ fn main() {
 	let (a0, fin) = sim::run(100,1.0,5000, 100.0);
 	println!("{}", fin)
 return;*/
+/*
 		let mut i = 1f64;
 		let tries = 20;
 		while i <= 100f64 {
@@ -58,6 +73,6 @@ return;*/
 			if multi {println!("{} {} {} {}", i, sum0/tries as f64, min, max);}
 			i += 10f64;
 
-		}
+		}*/
 
 }

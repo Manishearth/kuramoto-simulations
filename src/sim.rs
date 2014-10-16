@@ -47,12 +47,12 @@ pub fn createSet(){
     arr.encode(&mut encoder);
 }
 
-pub fn run(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<Oscillator>,Vec<Oscillator>) {
-    let dt = 0.001;
+pub fn run(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<f64>) {
+    let dt = 1f64;// 0.001; 
     let mut arr :Vec<Oscillator> = vec!();
     let mut ser = vec!();
     let mut sum = 0f64;
-
+    let mut ret = vec!();
     let mut i = n;
     let K = K / n as f64;
     let path = Path::new(filename.as_slice());
@@ -83,12 +83,14 @@ pub fn run(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<Oscil
             newarr.push(cl)
         }
         println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
+        ret.push((s*s + c*c).sqrt()/(n as f64) as f64);
         arr = newarr;
         ser.push(buf);
         ctr += 1;
     }
 //println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
-(arr0, arr)
+//(arr0, arr)
+ret
 }
 
 pub fn run_star(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscillator>) {
