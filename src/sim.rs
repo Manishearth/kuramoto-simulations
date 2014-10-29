@@ -1,11 +1,12 @@
 use std::rand;
 use std::num::FloatMath;
-use serialize::json::{decode, Encoder};
+use serialize::json::{decode, encode,Encoder};
 use std::path::posix::Path;
 use std::io::fs::File;
 use std::io::{ReadWrite, Truncate, Open};
 use  serialize::Encodable;
 use std::io::Reader;
+use std::num::Float;
 
 #[deriving(Encodable, Decodable, Clone, Show)]
 struct Oscillator {
@@ -41,7 +42,7 @@ pub fn createSet(){
         arr.push(osc);
         i -= 1;
     }
-    for i in arr.mut_iter() {
+    for i in arr.iter_mut() {
         i.phase -= sum;
     }
     arr.encode(&mut encoder);
@@ -82,50 +83,62 @@ pub fn run(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<f64>)
             buf.push(sum);
             newarr.push(cl)
         }
-        println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
+        //println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
         ret.push((s*s + c*c).sqrt()/(n as f64) as f64);
         arr = newarr;
         ser.push(buf);
         ctr += 1;
     }
-//println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
+println!("{}", encode(&Ret{zero: arr0.clone(), all: ser}))
 //(arr0, arr)
 ret
 }
 
-pub fn run_star(n: uint, omega: f64, t: uint, K: f64) -> (Vec<Oscillator>,Vec<Oscillator>) {
-    let dt = 0.001;
-    let mut arr = vec!();
+pub fn run_star(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<f64>) {
+    let dt = 1f64;// 0.001; 
     let mut sum = 0f64;
-    let mainosc = Oscillator::new();
+    let mut ret = vec!();
     let mut i = n;
     let K = K / n as f64;
-    while i > 0 {
-        let osc = Oscillator::new();
-        sum = sum + osc.phase;
-        sum -= 360f64*((sum/360.0) as uint as f64);
-        arr.push(osc);
-        i -= 1;
+    let path = Path::new(filename.as_slice());
+    let mut file = File::open_mode(&path, Open, ReadWrite).unwrap();
+    let arr_unsplit :Vec<Oscillator> = decode(file.read_to_string().unwrap().as_slice()).unwrap();
+    let mut arr = arr_unsplit.tail().to_vec();
+    let mut main = arr_unsplit[0];
+    let mut ctr = 0;
+    while ctr < t {
+        let mut s = 0.0;
+        let mut c = 0.0;
+        let mut newarr = vec!();
+        let mut sum = 0f64;
+        sum += main.omegadev*omega + omega;
+        for i in arr.iter() {
+            let newphase =  dt*(K*(((main.phase -i.phase)*3.1415/180.0).sin())+(i.omegadev*omega) + omega) + i.phase;
+            let mut j = i.clone();
+            j.phase = newphase;
+            //println!("new {}", newphase)
+            j.phase -= 360f64*((newphase/360.0) as int as f64);
+            newarr.push(j);
+            sum += K*(((i.phase - main.phase)*3.1415/180.0).sin());
+            sum *= dt;
+            sum += main.phase;
+            //println!("presum, {}", sum)
+            sum -= 360f64*((sum/360.0) as int as f64);
+            //println!("sum, {}", sum)
+            s+=(newphase * 3.14159/180.0).sin();
+            c+=(newphase * 3.14159/180.0).cos();
+            //println!("s{},c{}",s,c)
+
+            main.phase = sum;
+        }
+        s+=(main.phase * 3.14159/180.0).sin();
+        c+=(main.phase * 3.14159/180.0).cos();
+        // println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
+        ret.push((s*s + c*c).sqrt()/(n as f64) as f64);
+        arr = newarr;
+        ctr += 1;
     }
-    for i in arr.mut_iter() {
-        i.phase -= sum;
-    }
-    let arr0 = arr.clone();
-    let mut ctr = t;
-    while ctr > 0 {
-        let mut  sum = 0.0;
-        for i in arr.mut_iter() {
-            let dev =  K*(((i.phase - mainosc.phase)*3.1415/180.0).sin());
-            sum += dev;
-            i.phase += dt*(-dev + (i.omegadev + omega));
-            i.phase -= 360f64*((i.phase/360.0) as uint as f64);
-        }   
-        sum += mainosc.omegadev*omega + omega;
-        sum *= dt;
-        sum += mainosc.phase;
-        sum -= 360f64*((sum/360.0) as uint as f64);
-        ctr -= 1;
-    }
-//println!("{}", Encoder::str_encode(&Ret{zero: arr0.clone(), all: ser}))
-(arr0, arr)
+//println!("{}", encode(&Ret{zero: arr0.clone(), all: ser}))
+//(arr0, arr)
+ret
 }
