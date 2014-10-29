@@ -13,10 +13,10 @@ fn unwrap_arg<T: FromStr>(index: uint, def:T) -> T {
 }
 fn main() {
 	let args = std::os::args();
-	//sim::run(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
+	//sim::run_star(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
 	//return;
-	let mut k = 0.02;
-	while k < 0.2 {
+	let mut k = 0.001;
+	while k < 5.0 {
 		let n = unwrap_arg(1, 50000);
 		let buf = sim::run_star(30, 1.0, n, k, unwrap_arg(2, "data/30/10.rand.dat".to_string()));
 		let v = buf.slice_from(10000);
@@ -24,9 +24,9 @@ fn main() {
 		for e in v.iter() {
 			sum += *e;
 		}
-		sum /= 10000f64;
+		sum /= 40000f64;
 		println!("{} {}", k, sum)
-		k+= 0.02;
+		k+= 0.03;
 	}
 	//sim::createSet();
 	return;

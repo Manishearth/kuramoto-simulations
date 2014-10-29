@@ -110,8 +110,7 @@ pub fn run_star(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<
         let mut s = 0.0;
         let mut c = 0.0;
         let mut newarr = vec!();
-        let mut sum = 0f64;
-        sum += main.omegadev*omega + omega;
+        let mut sum = main.omegadev*omega + omega;
         for i in arr.iter() {
             let newphase =  dt*(K*(((main.phase -i.phase)*3.1415/180.0).sin())+(i.omegadev*omega) + omega) + i.phase;
             let mut j = i.clone();
@@ -120,20 +119,22 @@ pub fn run_star(n: uint, omega: f64, t: uint, K: f64, filename: String) -> (Vec<
             j.phase -= 360f64*((newphase/360.0) as int as f64);
             newarr.push(j);
             sum += K*(((i.phase - main.phase)*3.1415/180.0).sin());
-            sum *= dt;
-            sum += main.phase;
-            //println!("presum, {}", sum)
-            sum -= 360f64*((sum/360.0) as int as f64);
-            //println!("sum, {}", sum)
             s+=(newphase * 3.14159/180.0).sin();
             c+=(newphase * 3.14159/180.0).cos();
-            //println!("s{},c{}",s,c)
+
+        }
+        sum *= dt;
+        sum += main.phase;
+        //println!("presum, {}", sum)
+        sum -= 360f64*((sum/360.0) as int as f64);
+        //println!("sum, {}", sum)
+
+        //println!("s{},c{}",s,c)
 
             main.phase = sum;
-        }
         s+=(main.phase * 3.14159/180.0).sin();
         c+=(main.phase * 3.14159/180.0).cos();
-        // println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
+        //println!("{} {}", ctr, (s*s + c*c).sqrt()/(n as f64) as f64)
         ret.push((s*s + c*c).sqrt()/(n as f64) as f64);
         arr = newarr;
         ctr += 1;
