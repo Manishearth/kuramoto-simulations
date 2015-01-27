@@ -1,19 +1,18 @@
 
-#![feature(globs)] 
+#![feature(int_uint)]
+
+
 extern crate serialize;
-
-use std::num::FloatMath;
-
-use std::from_str::FromStr;
 mod sim;
 
-fn unwrap_arg<T: FromStr>(index: uint, def:T) -> T {
-	let arg: Option<T>  = FromStr::from_str(std::os::args()[index].as_slice());
+fn unwrap_arg<T: ::std::str::FromStr>(index: uint, def:T) -> T {
+	let arg: Option<T>  = (std::os::args()[index].as_slice()).parse();
 	arg.unwrap_or(def)
 }
 fn main() {
 	let args = std::os::args();
-	sim::run(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
+	//sim::createSet();return;
+	sim::run_star(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
 	return;
 	let mut k = 0.001;
 	while k < 5.0 {
@@ -25,8 +24,8 @@ fn main() {
 			sum += *e;
 		}
 		sum /= 40000f64;
-		println!("{} {}", k, sum)
-		k+= 0.03;
+		println!("{} {}", k, sum);
+		k+= 0.005;
 	}
 	//sim::createSet();
 	return;
