@@ -6,26 +6,41 @@ extern crate serialize;
 mod sim;
 
 fn unwrap_arg<T: ::std::str::FromStr>(index: uint, def:T) -> T {
-	let arg: Option<T>  = (std::os::args()[index].as_slice()).parse();
+	let arg: Result<T, _>  = (std::os::args()[index].as_slice()).parse();
 	arg.unwrap_or(def)
 }
 fn main() {
 	let args = std::os::args();
 	//sim::createSet();return;
-	sim::run_star(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
-	return;
-	let mut k = 0.001;
-	while k < 5.0 {
+	//sim::run_star(30, 1.0, unwrap_arg(1, 50000), unwrap_arg(2, 0.1), unwrap_arg(3, "data/30/10.rand.dat".to_string()));
+	//return;
+	let mut k = 0.5;
+	let mut init = None;
+	while k < 1.1 {
 		let n = unwrap_arg(1, 50000);
-		let buf = sim::run_star(30, 1.0, n, k, unwrap_arg(2, "data/30/10.rand.dat".to_string()));
+		let (buf, tup) = sim::run_star_stateful(init, 30, 1.0, n, k, unwrap_arg(2, "data/30/10.rand.dat".to_string()));
+		init = Some(tup);
 		let v = buf.slice_from(10000);
 		let mut sum = 0f64;
 		for e in v.iter() {
 			sum += *e;
 		}
-		sum /= 40000f64;
+		sum /= n as f64 - 10000f64;
 		println!("{} {}", k, sum);
-		k+= 0.005;
+		k+= 0.001;
+	}
+	while k > 0.5 {
+		let n = unwrap_arg(1, 50000);
+		let (buf, tup) = sim::run_star_stateful(init, 30, 1.0, n, k, unwrap_arg(2, "data/30/10.rand.dat".to_string()));
+		init = Some(tup);
+		let v = buf.slice_from(10000);
+		let mut sum = 0f64;
+		for e in v.iter() {
+			sum += *e;
+		}
+		sum /= n as f64 - 10000f64;
+		println!("{} {}", k, sum);
+		k-= 0.001;
 	}
 	//sim::createSet();
 	return;
